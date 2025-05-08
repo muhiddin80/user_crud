@@ -1,4 +1,4 @@
-import { Get, Injectable, NotFoundException, OnModuleInit } from "@nestjs/common";
+import { BadRequestException, Get, Injectable, NotFoundException, OnModuleInit } from "@nestjs/common";
 import { InjectModel } from "@nestjs/sequelize";
 import { User } from "./models";
 import { createUserDto } from "./dtos/create-user-dto";
@@ -30,6 +30,10 @@ export class UserService{
     }
 
     async createNew(payload:createUserDto,image:Express.Multer.File){
+        const foundedUser = await this.userModel.findOne({where:{email:payload.email}});
+        if (foundedUser) {
+            throw new BadRequestException('This user is already exist!');
+        }
         let imgUrl:string=''
         if(image){
             imgUrl = await this.fs.uploadFile(image)
